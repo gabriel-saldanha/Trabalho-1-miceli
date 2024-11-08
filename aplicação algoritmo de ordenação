@@ -1,0 +1,203 @@
+#include <iostream>
+
+struct No {
+    int dado;
+    No* proximo;
+
+    No(int valor) : dado(valor), proximo(nullptr) {}
+};
+
+void inserir(No*& head, int valor) {
+    No* novoNo = new No(valor);
+    if (!head) {
+        head = novoNo;
+    } else {
+        No* temp = head;
+        while (temp->proximo) {
+            temp = temp->proximo;
+        }
+        temp->proximo = novoNo;
+    }
+}
+
+void exibir(No* head) {
+    No* temp = head;
+    while (temp) {
+        std::cout << temp->dado << " -> ";
+        temp = temp->proximo;
+    }
+    std::cout << "nullptr\n";
+}
+
+void ordenarBubbleSort(No* head) {
+    if (!head) return;
+
+    bool trocou;
+    do {
+        trocou = false;
+        No* atual = head;
+
+        while (atual && atual->proximo) {
+            if (atual->dado > atual->proximo->dado) {
+                int temp = atual->dado;
+                atual->dado = atual->proximo->dado;
+                atual->proximo->dado = temp;
+                trocou = true;
+            }
+            atual = atual->proximo;
+        }
+    } while (trocou);
+}
+
+No* particionar(No* inicio, No* fim, No*& novoInicio, No*& novoFim) {
+    No* pivo = fim;
+    No* anterior = nullptr, *atual = inicio, *cauda = pivo;
+
+    while (atual != pivo) {
+        if (atual->dado < pivo->dado) {
+            if (!novoInicio) novoInicio = atual;
+
+            anterior = atual;
+            atual = atual->proximo;
+        } else {
+            if (anterior) anterior->proximo = atual->proximo;
+            No* temp = atual->proximo;
+            atual->proximo = nullptr;
+            cauda->proximo = atual;
+            cauda = atual;
+            atual = temp;
+        }
+    }
+
+    if (!novoInicio) novoInicio = pivo;
+    novoFim = cauda;
+
+    return pivo;
+}
+
+No* ordenarQuickSortRecursivo(No* inicio, No* fim) {
+    if (!inicio || inicio == fim) return inicio;
+
+    No* novoInicio = nullptr, *novoFim = nullptr;
+
+    No* pivo = particionar(inicio, fim, novoInicio, novoFim);
+
+    if (novoInicio != pivo) {
+        No* temp = novoInicio;
+        while (temp->proximo != pivo) temp = temp->proximo;
+        temp->proximo = nullptr;
+
+        novoInicio = ordenarQuickSortRecursivo(novoInicio, temp);
+
+        temp = novoInicio;
+        while (temp->proximo) temp = temp->proximo;
+        temp->proximo = pivo;
+    }
+
+    pivo->proximo = ordenarQuickSortRecursivo(pivo->proximo, novoFim);
+
+    return novoInicio;
+}
+
+void ordenarQuickSort(No*& head) {
+    head = ordenarQuickSortRecursivo(head, obterUltimoNo(head));
+}
+
+No* obterUltimoNo(No* head) {
+    while (head && head->proximo) head = head->proximo;
+    return head;
+}
+
+No* dividir(No* head) {
+    No* lento = head;
+    No* rapido = head->proximo;
+
+    while (rapido && rapido->proximo) {
+        lento = lento->proximo;
+        rapido = rapido->proximo->proximo;
+    }
+
+    No* meio = lento->proximo;
+    lento->proximo = nullptr;
+    return meio;
+}
+
+No* mesclar(No* lista1, No* lista2) {
+    if (!lista1) return lista2;
+    if (!lista2) return lista1;
+
+    if (lista1->dado < lista2->dado) {
+        lista1->proximo = mesclar(lista1->proximo, lista2);
+        return lista1;
+    } else {
+        lista2->proximo = mesclar(lista1, lista2->proximo);
+        return lista2;
+    }
+}
+
+No* ordenarMergeSort(No* head) {
+    if (!head || !head->proximo) return head;
+
+    No* meio = dividir(head);
+    No* esquerda = ordenarMergeSort(head);
+    No* direita = ordenarMergeSort(meio);
+
+    return mesclar(esquerda, direita);
+}
+
+void ordenarInsertionSort(No*& head) {
+    No* ordenado = nullptr;
+    No* atual = head;
+
+    while (atual) {
+        No* proximo = atual->proximo;
+        if (!ordenado || ordenado->dado >= atual->dado) {
+            atual->proximo = ordenado;
+            ordenado = atual;
+        } else {
+            No* temp = ordenado;
+            while (temp->proximo && temp->proximo->dado < atual->dado) {
+                temp = temp->proximo;
+            }
+            atual->proximo = temp->proximo;
+            temp->proximo = atual;
+        }
+        atual = proximo;
+    }
+    head = ordenado;
+}
+
+int main() {
+    No* lista = nullptr;
+    int input;
+    std::cout << "Digite os numeros (-1 encerra):\n";
+
+    while (true) {
+        std::cout << "> ";
+        std::cin >> input;
+        if (input == -1) break;
+        inserir(lista, input);
+    }
+
+    int escolha;
+    std::cout << "Escolha:\n1 - Bubble Sort\n2 - Quick Sort\n3 - Merge Sort\n4 - Insertion Sort\n> ";
+    std::cin >> escolha;
+
+    if (escolha == 1) {
+        ordenarBubbleSort(lista);
+    } else if (escolha == 2) {
+        ordenarQuickSort(lista);
+    } else if (escolha == 3) {
+        lista = ordenarMergeSort(lista);
+    } else if (escolha == 4) {
+        ordenarInsertionSort(lista);
+    } else {
+        std::cout << "Escolha invalida!\n";
+        return 1;
+    }
+
+    std::cout << "Lista ordenada:\n";
+    exibir(lista);
+
+    return 0;
+}
