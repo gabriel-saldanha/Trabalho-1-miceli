@@ -1,0 +1,75 @@
+#include <iostream>
+using namespace std;
+// https://leetcode.com/problems/remove-duplicates-from-sorted-list/description/
+class No {
+public:
+    int valor;
+    No* proximo;
+
+    No(int v) : valor(v), proximo(nullptr) {}
+};
+
+No* removerRepetidos(No* cabeca) {
+    No* atual = cabeca;
+    while (atual != nullptr && atual->proximo != nullptr) {
+        if (atual->valor == atual->proximo->valor) {
+            atual->proximo = atual->proximo->proximo;
+        } else {
+            atual = atual->proximo;
+        }
+    }
+    return cabeca;
+}
+
+No* criarListaEncadeada() {
+    No* cabeca = nullptr;
+    No* atual = nullptr;
+    string entrada;
+    
+    cin >> entrada;  
+
+
+    int i = 1;
+    while (i < entrada.size() - 1) {
+        int valor = 0;
+        while (i < entrada.size() && entrada[i] != ',' && entrada[i] != ']') {
+            valor = valor * 10 + (entrada[i] - '0');
+            i++;
+        }
+        
+        No* novoNo = new No(valor);
+        if (cabeca == nullptr) {
+            cabeca = novoNo;
+        } else {
+            atual->proximo = novoNo;
+        }
+        atual = novoNo;
+
+        if (entrada[i] == ',') {
+            i++; 
+        }
+    }
+
+    return cabeca;
+}
+
+void imprimirListaEncadeada(No* cabeca) {
+    No* atual = cabeca;
+    cout << "[";
+    while (atual != nullptr) {
+        cout << atual->valor;
+        if (atual->proximo != nullptr) cout << ", ";
+        atual = atual->proximo;
+    }
+    cout << "]" << endl;
+}
+
+int main() {
+    No* cabeca = criarListaEncadeada();
+
+    cabeca = removerRepetidos(cabeca);
+
+    imprimirListaEncadeada(cabeca);
+
+    return 0;
+}
